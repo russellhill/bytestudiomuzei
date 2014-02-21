@@ -3,30 +3,46 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical" 
-    android:background="#22000000">
+    android:padding="10dp"
+    android:background="#FFFFFF">
 
-    <TextView
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp">
+        
+ 	<TextView
         android:id="@+id/textView1"
-        android:layout_width="wrap_content"
+        android:layout_width="100dp"
         android:layout_height="wrap_content"
         android:text="Category"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <Spinner
         android:id="@+id/categoryList"
-        android:layout_width="match_parent"
+        android:layout_toRightOf="@id/textView1"
+		android:layout_alignBaseline="@id/textView1"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content" />
-
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
+	</RelativeLayout>
+	
+    <RelativeLayout
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="Update"
+        android:layout_marginTop="40dp">
+    
+	<TextView
+        android:id="@+id/textView2"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:text="Refresh"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <Spinner
         android:id="@+id/frequencyList"
-        android:layout_width="match_parent"
+        android:layout_toRightOf="@id/textView2"
+		android:layout_alignBaseline="@id/textView2"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content" />
-
+	</RelativeLayout>
 </LinearLayout>
