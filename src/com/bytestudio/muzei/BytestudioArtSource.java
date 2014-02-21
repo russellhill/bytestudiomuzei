@@ -77,7 +77,7 @@ public class BytestudioArtSource extends RemoteMuzeiArtSource {
                 .imageUri(Uri.parse(photo.image_url))
                 .token(token)
                 .viewIntent(new Intent(Intent.ACTION_VIEW,
-                        Uri.parse("http://500px.com/photo/" + photo.id)))
+                        Uri.parse(photo.image_url)))
                 .build());
 
         scheduleUpdate(System.currentTimeMillis() + ROTATE_TIME_MILLIS);
