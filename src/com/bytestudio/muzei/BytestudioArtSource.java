@@ -37,8 +37,7 @@ public class BytestudioArtSource extends RemoteMuzeiArtSource {
                     @Override
                     public Throwable handleError(RetrofitError retrofitError) {
                         int statusCode = retrofitError.getResponse().getStatus();
-                        if (retrofitError.isNetworkError()
-                                || (500 <= statusCode && statusCode < 600)) {
+                        if (retrofitError.isNetworkError() || (500 <= statusCode && statusCode < 600)) {
                             return new RetryException();
                         }
                         scheduleUpdate(System.currentTimeMillis() + ROTATE_TIME_MILLIS);
