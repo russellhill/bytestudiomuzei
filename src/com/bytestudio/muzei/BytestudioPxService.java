@@ -6,10 +6,10 @@ import retrofit.http.GET;
 import retrofit.Callback;
 
 interface BytestudioPxService {
-    @GET("/muzei_json.php") 
+    @GET("/pics_json.php") 
     PhotosResponse getPopularPhotos();
 
-    @GET("/muzei_categories_json.php") 
+    @GET("/muzei/categories_json.php") 
     void getCategories(Callback<List<Category>> callback);
     
     static class PhotosResponse {
@@ -21,6 +21,7 @@ interface BytestudioPxService {
         String name;
         String description;
         String image_url;
+        String viewIntent;
         User user;
     }
 

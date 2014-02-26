@@ -20,19 +20,42 @@ import static com.bytestudio.muzei.BytestudioPxService.PhotosResponse;
 public class BytestudioArtSource extends RemoteMuzeiArtSource {
     private static final String TAG = "Bytestudio";
     private static final String SOURCE_NAME = "BytestudioArtSource";
+    private static final String DEFAULT_CATEGORY = "etcetera";
 
     private static final int ROTATE_TIME_MILLIS = 3 * 60 * 60 * 1000; // rotate every 3 hours
+
+	private PreferenceManager preferenceManager;
 
 	public BytestudioArtSource() {
 		super(SOURCE_NAME);
 	}
 
     @Override
-    protected void onTryUpdate(int reason) throws RetryException {
-        String currentToken = (getCurrentArtwork() != null) ? getCurrentArtwork().getToken() : null;
+    public void onCreate() {
+        super.onCreate();
 
+        setUserCommands(BUILTIN_COMMAND_ID_NEXT_ARTWORK);
+    }
+    
+    @Override
+    protected void onTryUpdate(int reason) throws RetryException {
+        // create a new instance of the preference manager
+        preferenceManager = new PreferenceManager(this);
+
+        String currentToken = (getCurrentArtwork() != null) ? getCurrentArtwork().getToken() : null;
+		String storedCategorySelection = preferenceManager.getCategory();
+		
+		if (storedCategorySelection == null) {
+			storedCategorySelection = DEFAULT_CATEGORY;
+			preferenceManager.setCategory(storedCategorySelection);
+		}
+
+		String photoURLString = "http://www.bytestudiophotography.com/muzei/" + storedCategorySelection.toLowerCase();
+		
+		Log.i("INFO", "Photo URL: " + photoURLString);
+		
         RestAdapter restAdapter = new RestAdapter.Builder()
-                .setEndpoint("http://www.bytestudiophotography.com")
+                .setEndpoint(photoURLString)
                 .setErrorHandler(new ErrorHandler() {
                     @Override
                     public Throwable handleError(RetrofitError retrofitError) {
@@ -76,7 +99,7 @@ public class BytestudioArtSource extends RemoteMuzeiArtSource {
                 .imageUri(Uri.parse(photo.image_url))
                 .token(token)
                 .viewIntent(new Intent(Intent.ACTION_VIEW,
-                        Uri.parse(photo.image_url)))
+                        Uri.parse(photo.viewIntent)))
                 .build());
 
         scheduleUpdate(System.currentTimeMillis() + ROTATE_TIME_MILLIS);

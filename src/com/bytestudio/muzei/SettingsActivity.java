@@ -58,6 +58,7 @@ public class SettingsActivity extends Activity {
             getActionBar().setDisplayHomeAsUpEnabled(true);
         }	
 
+        // create a new instance of the preference manager
         preferenceManager = new PreferenceManager(this);
 
         // setup the UI etc
@@ -190,8 +191,7 @@ public class SettingsActivity extends Activity {
 	private void fetchCategories() {
 		// create a new restadapter
         RestAdapter restAdapter = new RestAdapter.Builder()
-//        .setEndpoint("http://www.bytestudiophotography.com")
-        .setEndpoint("http://192.168.1.118:9090")
+        .setEndpoint("http://www.bytestudiophotography.com")
         .build();
 
         // call the getCategories API
