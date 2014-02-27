@@ -6,10 +6,16 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import retrofit.ErrorHandler;
 import retrofit.RestAdapter;
@@ -45,6 +51,7 @@ public class SettingsActivity extends Activity {
 	private List<Category> retrievedCategories = null;
 	
 	private CategoryAdapter categoryAdapter = null;
+	private FrequencyAdapter frequencyAdapter = null;
 	
 	@SuppressLint("NewApi")
 	@Override
@@ -95,31 +102,36 @@ public class SettingsActivity extends Activity {
 	}
 	
 	private void setupFrequencyList() {
-		// create a frequencyArray to use for listing the refresh intervals
-		ArrayList<String> frequencyArray = new ArrayList<String>(Arrays.asList(getResources().getStringArray(R.array.frequency_array)));
-		String storedSelection = preferenceManager.getFrequency();
-		
-		// Create an ArrayAdapter using the string array and a default spinner layout
-		ArrayAdapter<String> adapter = new ArrayAdapter<String> (this, android.R.layout.simple_spinner_item, frequencyArray);
+		String frequencyJSON = getFrequencyJSON();
+		JSONObject parsedJSON = null;
+		JSONArray frequencyArray = null;
 
-		// Specify the layout to use when the list of choices appears
-		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		try {
+			parsedJSON = new JSONObject(frequencyJSON);
+			
+			frequencyArray = parsedJSON.getJSONArray("categories");
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		frequencyAdapter = new FrequencyAdapter(frequencyArray);
+		
+		int storedSelection = preferenceManager.getFrequency();
 		
 		// Apply the adapter to the spinner
-		frequencyList.setAdapter(adapter);		
+		frequencyList.setAdapter(frequencyAdapter);		
 		
 		// if we had a previous frequency stored, find it in the array and reselect it
-		if (storedSelection != null) {
-			int id = frequencyArray.indexOf(storedSelection);
-			frequencyList.setSelection(id);
-		}
+		int id = findFrequency(frequencyArray, storedSelection);
+		frequencyList.setSelection(id);
 				
 		// set selected listener
 		frequencyList.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 			@Override
 			public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-				String selected = (String)parent.getItemAtPosition(pos);
-				preferenceManager.setFrequency(selected);
+				JSONObject selected = (JSONObject)parent.getItemAtPosition(pos);
+				preferenceManager.setFrequency(selected.optInt("interval"));
 			}
 
 			@Override
@@ -170,6 +182,22 @@ public class SettingsActivity extends Activity {
 		});
 	}
 	
+	private int findFrequency(JSONArray frequencyList, int itemToFind) {
+		int foundPos = -1;
+		
+		if (frequencyList != null) {
+			for (int pos = 0; pos < frequencyList.length(); pos++) {
+				JSONObject frequency = frequencyList.optJSONObject(pos);
+				if (frequency.optInt("interval") == itemToFind) {
+					foundPos = pos;
+					break;
+				}
+			}
+		}
+		
+		return foundPos;
+	}
+	
 	private int findCategory(String categoryToFind) {
 		int foundPos = -1;
 		int pos = 0;
@@ -200,8 +228,6 @@ public class SettingsActivity extends Activity {
             @Override
             public void success(List<Category> categories, Response response) {
             	if (!categories.isEmpty()) {
-            		Log.i(TAG, "categories:" + categories);
-
             		if (!(categories == null)) {
             			if (categories.size() == 0) {
             			    Log.w(TAG, "No categories returned from API.");
@@ -266,4 +292,85 @@ public class SettingsActivity extends Activity {
 			return text;		
 		}
 	}
+
+	private class FrequencyAdapter extends BaseAdapter implements SpinnerAdapter {
+		private JSONArray mData;
+		
+		public FrequencyAdapter(JSONArray newData) {
+			this.mData = newData;
+		}
+		
+	    public void setData(JSONArray newData) {
+	    	this.mData = newData;
+	    }
+		
+		@Override
+		public int getCount() {
+			return mData.length();
+		}
+
+		@Override
+		public Object getItem(int position) {
+			return mData.optJSONObject(position);
+		}
+
+		@Override
+		public long getItemId(int position) {
+			return position;
+		}
+
+		@Override
+		public View getView(int position, View recycle, ViewGroup parent) {
+			TextView text;
+			
+			if (recycle != null){
+				// Re-use the recycled view here!
+			    text = (TextView) recycle;
+			} else {
+			    // No recycled view, inflate the "original" from the platform:
+			    text = (TextView) getLayoutInflater().inflate(android.R.layout.simple_spinner_dropdown_item, parent, false);
+			}
+			
+			JSONObject current = (JSONObject)mData.optJSONObject(position);
+			text.setText(current.optString("name"));
+			
+			return text;		
+		}
+	}
+	
+    private String getFrequencyJSON() {
+    	Boolean success = false;
+        String JSONString = "";
+    	
+		try {
+			InputStream inputStream = this.getAssets().open("frequency.json");
+			
+			if (inputStream != null) {
+			    InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+			    BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+			    String receiveString = "";
+			    StringBuilder stringBuilder = new StringBuilder();
+			
+				while ( (receiveString = bufferedReader.readLine()) != null ) {
+					stringBuilder.append(receiveString);
+				}
+				
+				inputStream.close();
+				JSONString = stringBuilder.toString();
+
+				success = true;
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+        } catch (IOException e){
+            e.printStackTrace();
+        }   
+        
+		if (success == false) {
+			JSONString = null;
+		}
+		
+    	return JSONString;
+    }
+
 }

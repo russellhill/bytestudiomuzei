@@ -1,0 +1,24 @@
+{
+   "categories":[
+      {
+         "id":0,
+         "name":"1 hour",
+         "interval":3600000
+      },
+      {
+         "id":1,
+         "name":"3 hours",
+         "interval":10800000
+      },
+      {
+         "id":2,
+         "name":"12 hours",
+         "interval":43200000
+      },
+      {
+         "id":3,
+         "name":"1 day",
+         "interval":86400000
+      }
+   ]
+}

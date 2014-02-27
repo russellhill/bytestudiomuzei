@@ -25,13 +25,13 @@ public class PreferenceManager {
 		return pref.getString(Constants.kCategory, null); 
 	}
 	
-	public void setFrequency(String frequency){
-		editor.putString(Constants.kRefreshFrequency, frequency);
+	public void setFrequency(int frequency){
+		editor.putInt(Constants.kRefreshFrequency, frequency);
 		editor.commit();
 	}
 	
-	public String getFrequency(){
-		return pref.getString(Constants.kRefreshFrequency, null); 
+	public int getFrequency(){
+		return pref.getInt(Constants.kRefreshFrequency, 0); 
 	}
 	
 }

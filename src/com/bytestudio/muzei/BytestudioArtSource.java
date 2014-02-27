@@ -21,8 +21,7 @@ public class BytestudioArtSource extends RemoteMuzeiArtSource {
     private static final String TAG = "Bytestudio";
     private static final String SOURCE_NAME = "BytestudioArtSource";
     private static final String DEFAULT_CATEGORY = "etcetera";
-
-    private static final int ROTATE_TIME_MILLIS = 3 * 60 * 60 * 1000; // rotate every 3 hours
+    private static final int DEFAULT_FREQUENCY = 3 * 60 * 60 * 1000;
 
 	private PreferenceManager preferenceManager;
 
@@ -44,15 +43,23 @@ public class BytestudioArtSource extends RemoteMuzeiArtSource {
 
         String currentToken = (getCurrentArtwork() != null) ? getCurrentArtwork().getToken() : null;
 		String storedCategorySelection = preferenceManager.getCategory();
+		int storedFrequencySelection = preferenceManager.getFrequency();
 		
 		if (storedCategorySelection == null) {
 			storedCategorySelection = DEFAULT_CATEGORY;
 			preferenceManager.setCategory(storedCategorySelection);
 		}
+		
+		if (storedFrequencySelection == 0) {
+			storedFrequencySelection = DEFAULT_FREQUENCY;
+			preferenceManager.setFrequency(storedFrequencySelection);
+		}
 
 		String photoURLString = "http://www.bytestudiophotography.com/muzei/" + storedCategorySelection.toLowerCase();
 		
 		Log.i("INFO", "Photo URL: " + photoURLString);
+		
+		final int finalStoredFrequencySelection = storedFrequencySelection;
 		
         RestAdapter restAdapter = new RestAdapter.Builder()
                 .setEndpoint(photoURLString)
@@ -63,7 +70,7 @@ public class BytestudioArtSource extends RemoteMuzeiArtSource {
                         if (retrofitError.isNetworkError() || (500 <= statusCode && statusCode < 600)) {
                             return new RetryException();
                         }
-                        scheduleUpdate(System.currentTimeMillis() + ROTATE_TIME_MILLIS);
+                        scheduleUpdate(System.currentTimeMillis() + finalStoredFrequencySelection);
                         return retrofitError;
                     }
                 })
@@ -78,7 +85,7 @@ public class BytestudioArtSource extends RemoteMuzeiArtSource {
 
         if (response.photos.size() == 0) {
             Log.w(TAG, "No photos returned from API.");
-            scheduleUpdate(System.currentTimeMillis() + ROTATE_TIME_MILLIS);
+            scheduleUpdate(System.currentTimeMillis() + storedFrequencySelection);
             return;
         }
 
@@ -102,6 +109,6 @@ public class BytestudioArtSource extends RemoteMuzeiArtSource {
                         Uri.parse(photo.viewIntent)))
                 .build());
 
-        scheduleUpdate(System.currentTimeMillis() + ROTATE_TIME_MILLIS);
+        scheduleUpdate(System.currentTimeMillis() + storedFrequencySelection);
     }
 }
